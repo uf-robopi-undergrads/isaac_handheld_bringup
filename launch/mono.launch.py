@@ -18,7 +18,7 @@ def generate_launch_description():
         executable='rviz2',
         name='rviz2',
         arguments=['-d', rviz_config_file],
-        output='screen'
+        output='log'
     )
 
     # --- 2. Setup Composable Nodes ---
@@ -30,7 +30,8 @@ def generate_launch_description():
         parameters=[{
             'video_device': '/dev/video0',
             'image_size': [640, 480],
-            'camera_info_url': 'file:///workspaces/isaac_ros-dev/config/camera.yaml' 
+            'camera_frame_id': 'camera_link',
+            'camera_info_url': 'file:///workspaces/isaac_ros-dev/src/isaac_handheld_bringup/config/camera.yaml' 
         }],
         # Remap standard v4l2 outputs to the inputs expected by Isaac ROS VSLAM
         remappings=[
@@ -48,11 +49,24 @@ def generate_launch_description():
             'num_cameras': 1,                # Tell VSLAM to run in monocular mode
             'enable_imu_fusion': False,      # Disable IMU since we only have a camera
             # might need to add a transform later to make it make sense
-            'base_frame': 'camera',     # The physical location of the camera
-            'odom_frame': 'odom',            # The frame the SLAM algorithm will publish to
-            'map_frame': 'map',
+            # keep these default for now
+            'base_frame': 'base_link',
+            # the v4l2_cam node doesn't publish frame id in camera info... manually specify here
+            'camera_optical_frames': ['camera_link'],
+            # 'odom_frame': 'odom',            # The frame the SLAM algorithm will publish to
+            # 'map_frame': 'map',
             'enable_rectified_pose': False   # Depends on if your camera is pre-rectified
         }]
+    )
+
+    # account for upside down camera mount
+    tf_publisher = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='board_to_camera_tf',
+        # 180 deg rotation
+        arguments=['0', '0', '0', '0', '0', '1.570796', 'base_link', 'camera_link'],
+        output='screen'
     )
 
     # The Container for hardware-accelerated zero-copy sharing
@@ -78,5 +92,6 @@ def generate_launch_description():
     # --- 4. Return the LaunchDescription ---
     return LaunchDescription([
         rviz_node,
+        tf_publisher,
         delayed_container
     ])
