@@ -2,7 +2,7 @@ import os
 from glob import glob
 from setuptools import find_packages, setup
 
-package_name = "handheld_bringup"
+package_name = "isaac_handheld_bringup"
 
 setup(
     name=package_name,
