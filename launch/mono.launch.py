@@ -8,8 +8,9 @@ from launch_ros.descriptions import ComposableNode
 def generate_launch_description():
 
     # --- 1. Setup RViz2 ---
-    isaac_vslam_share_dir = get_package_share_directory('isaac_ros_visual_slam')
-    rviz_config_file = os.path.join(isaac_vslam_share_dir, 'rviz', 'default.cfg.rviz')
+    bringup_share_dir = get_package_share_directory('isaac_handheld_bringup')
+
+    rviz_config_file = os.path.join(bringup_share_dir, 'config', 'rviz', 'handheld.cfg.rviz')
 
     # RViz Node (This will launch immediately)
     rviz_node = Node(
@@ -46,7 +47,8 @@ def generate_launch_description():
         parameters=[{
             'num_cameras': 1,                # Tell VSLAM to run in monocular mode
             'enable_imu_fusion': False,      # Disable IMU since we only have a camera
-            'base_frame': 'camera_link',     # The physical location of the camera
+            # might need to add a transform later to make it make sense
+            'base_frame': 'camera',     # The physical location of the camera
             'odom_frame': 'odom',            # The frame the SLAM algorithm will publish to
             'map_frame': 'map',
             'enable_rectified_pose': False   # Depends on if your camera is pre-rectified
